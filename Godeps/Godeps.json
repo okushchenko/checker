@@ -1,0 +1,73 @@
+{
+	"ImportPath": "github.com/alexgear/checker",
+	"GoVersion": "go1.5.2",
+	"Deps": [
+		{
+			"ImportPath": "bitbucket.org/zombiezen/gopdf/pdf",
+			"Comment": "go.weekly.2012-02-22-18",
+			"Rev": "'1c63dc69751bc45441c2ce1f56b631c55294b4d5'"
+		},
+		{
+			"ImportPath": "github.com/BurntSushi/toml",
+			"Comment": "v0.1.0-21-g056c9bc",
+			"Rev": "056c9bc7be7190eaa7715723883caffa5f8fa3e4"
+		},
+		{
+			"ImportPath": "github.com/ajstarks/svgo",
+			"Comment": "go.weekly.2012-01-27-125-g544086e",
+			"Rev": "544086e8a54d25cd409ace66206aca1b655af1d5"
+		},
+		{
+			"ImportPath": "github.com/boltdb/bolt",
+			"Comment": "v1.1.0-40-g34a0fa5",
+			"Rev": "34a0fa5307f7562980fb8e7ff4723f7987edf49b"
+		},
+		{
+			"ImportPath": "github.com/golang/freetype",
+			"Comment": "release-120-gf29eb11",
+			"Rev": "f29eb116deb328d02ee5c573f02d442ca67d5532"
+		},
+		{
+			"ImportPath": "github.com/gonum/floats",
+			"Rev": "02000075baca88ae9cf0a7576da2d0fb0079ad3c"
+		},
+		{
+			"ImportPath": "github.com/gonum/internal/asm",
+			"Rev": "5fad8248d2d7f4b9786f9183252c28c33f3587d9"
+		},
+		{
+			"ImportPath": "github.com/gonum/plot",
+			"Rev": "f2838964dd4f35a62987e5ebbc0d2ed73567fb8b"
+		},
+		{
+			"ImportPath": "github.com/llgcode/draw2d",
+			"Comment": "v1-68-gf444aac",
+			"Rev": "f444aacdd7d592ae7732b7b63a9a15ae50bd1ce4"
+		},
+		{
+			"ImportPath": "github.com/montanaflynn/stats",
+			"Comment": "0.2.0-51-g2c10aa9",
+			"Rev": "2c10aa99e7ec8c4607d4427ec7a1a60fcdfce85f"
+		},
+		{
+			"ImportPath": "golang.org/x/image/draw",
+			"Rev": "baddd3465a05d84a6d8d3507547a91cb188c81ea"
+		},
+		{
+			"ImportPath": "golang.org/x/image/font",
+			"Rev": "baddd3465a05d84a6d8d3507547a91cb188c81ea"
+		},
+		{
+			"ImportPath": "golang.org/x/image/math/f64",
+			"Rev": "baddd3465a05d84a6d8d3507547a91cb188c81ea"
+		},
+		{
+			"ImportPath": "golang.org/x/image/math/fixed",
+			"Rev": "baddd3465a05d84a6d8d3507547a91cb188c81ea"
+		},
+		{
+			"ImportPath": "golang.org/x/image/tiff",
+			"Rev": "baddd3465a05d84a6d8d3507547a91cb188c81ea"
+		}
+	]
+}
