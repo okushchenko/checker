@@ -42,7 +42,7 @@ func send(ief string, r common.Response) error {
 	form := url.Values{}
 	form.Set("status", fmt.Sprint(r.Status))
 	form.Set("latency", r.Latency.String())
-	form.Set("time", r.Time.Format(time.RFC3339))
+	form.Set("time", r.Time.Format(time.RFC3339Nano))
 	resp, err := client.PostForm(fmt.Sprint(u), form)
 	//req, _ := http.NewRequest("POST", fmt.Sprint(u), bytes.NewBufferString(form.Encode()))
 	//req.Header.Add("Content-Type", "application/x-www-form-urlencoded")

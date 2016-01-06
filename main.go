@@ -48,10 +48,10 @@ func main() {
 					if err != nil {
 						log.Fatal(err.Error())
 					}
-					err = process.Plot(ief, latency)
-					if err != nil {
-						log.Fatal(err.Error())
-					}
+					//err = process.Plot(ief, latency)
+					//if err != nil {
+					//	log.Fatal(err.Error())
+					//}
 				}
 			}
 		}()

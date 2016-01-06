@@ -1,7 +1,6 @@
 package datastore
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"strconv"
@@ -43,12 +42,12 @@ func InitDB() (*bolt.DB, error) {
 func Write(ief string, r common.Response) error {
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(ief)).Bucket([]byte("latency"))
-		err = b.Put([]byte(r.Time.Format(time.RFC3339)), []byte(r.Latency.String()))
+		err = b.Put([]byte(r.Time.Format(time.RFC3339Nano)), []byte(r.Latency.String()))
 		if err != nil {
 			return fmt.Errorf("update bucket: %s", err.Error())
 		}
 		b = tx.Bucket([]byte(ief)).Bucket([]byte("status"))
-		err = b.Put([]byte(r.Time.Format(time.RFC3339)), []byte(fmt.Sprint(r.Status)))
+		err = b.Put([]byte(r.Time.Format(time.RFC3339Nano)), []byte(fmt.Sprint(r.Status)))
 		if err != nil {
 			return fmt.Errorf("update bucket: %s", err.Error())
 		}
@@ -57,29 +56,23 @@ func Write(ief string, r common.Response) error {
 	return err
 }
 
-func Read(ief string) ([]bool, []float64, error) {
-	max := time.Now()
-	min := max.Add(-1 * time.Hour)
-	latency := make([]float64, 3600)
-	status := make([]bool, 3600)
+func Read(ief string) (map[time.Time]bool, map[time.Time]float64, error) {
+	min := time.Now().Add(-24 * time.Hour)
+	latency := make(map[time.Time]float64)
+	status := make(map[time.Time]bool)
 	err = db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(ief)).Bucket([]byte("latency")).Cursor()
-		for k, v := c.Seek([]byte(min.Format(time.RFC3339))); k != nil && bytes.Compare(k, []byte(max.Format(time.RFC3339))) <= 0; k, v = c.Next() {
+		for k, v := c.Seek([]byte(min.Format(time.RFC3339Nano))); k != nil; k, v = c.Next() {
 			//fmt.Printf("time=%s, latency=%s", k, v)
 			v1, err := time.ParseDuration(string(v))
 			if err != nil {
 				return fmt.Errorf("Failed to parse duration: %s", err.Error())
 			}
-			t, err := time.Parse(time.RFC3339, string(k))
+			t, err := time.Parse(time.RFC3339Nano, string(k))
 			if err != nil {
 				return fmt.Errorf("Failed to parse time: %s", err.Error())
 			}
-			i := int(t.Sub(min).Seconds())
-			if latency[i] == 0.0 {
-				latency[i] = v1.Seconds()
-			} else {
-				latency[i] = math.Max(v1.Seconds(), latency[i])
-			}
+			latency[t] = math.Max(v1.Seconds(), latency[t])
 
 			c := tx.Bucket([]byte(ief)).Bucket([]byte("status")).Cursor()
 			_, v = c.Seek([]byte(k))
@@ -87,7 +80,7 @@ func Read(ief string) ([]bool, []float64, error) {
 			if err != nil {
 				return fmt.Errorf("Failed to parse status: %s", err.Error())
 			}
-			status[i] = v2
+			status[t] = v2
 			//fmt.Printf(", status=%s\n", v)
 		}
 		return nil
