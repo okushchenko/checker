@@ -9,7 +9,6 @@ import (
 	"github.com/alexgear/checker/config"
 	"github.com/alexgear/checker/datastore"
 	"github.com/alexgear/checker/network"
-	"github.com/alexgear/checker/process"
 	"github.com/alexgear/checker/worker"
 )
 
@@ -35,26 +34,6 @@ func main() {
 		}
 		defer db.Close()
 		log.Println("Dialing...")
-		go func() {
-			ticker := time.NewTicker(30 * time.Second)
-			for _ = range ticker.C {
-				for _, ief := range []string{"wifi", "lan"} {
-					log.Printf("=============%s============", ief)
-					status, latency, err := datastore.Read(ief)
-					if err != nil {
-						log.Fatal(err.Error())
-					}
-					err = process.Compute(status, latency)
-					if err != nil {
-						log.Fatal(err.Error())
-					}
-					//err = process.Plot(ief, latency)
-					//if err != nil {
-					//	log.Fatal(err.Error())
-					//}
-				}
-			}
-		}()
 		err = api.InitServer()
 		if err != nil {
 			log.Fatal(err)

@@ -11,6 +11,22 @@ var (
 )
 
 const (
+	rootTemplate = `<!doctype html>
+<html>
+<head>
+  <title>checker</title>
+</head>
+<body>
+  <div style="font-family: Courier; width: 100%%">
+    <ul>
+      <li><a href="/v1/wifi/status">Wifi Status</a></li>
+      <li><a href="/v1/lan/status">Lan Status</a></li>
+      <li><a href="/v1/wifi">Plot Wifi Graph</a></li>
+      <li><a href="/v1/lan">Plot Lan Graph</a></li>
+    </ul>
+  </div>
+</body>
+</html>`
 	plotsTemplateHead = `<!doctype html>
 <html>
 <head>
@@ -30,9 +46,15 @@ const (
       xlabel: 'Time',
       showRoller: true,
       colors: ['#FA7878', '#8AE234'],
-      legend: 'always',
       logscale: true,
-      strokeWidth: 1.3
+      strokeWidth: 1.3,
+	  series: {
+		ERR: {
+          fillGraph: true,
+		  stepPlot: true,
+	      drawGapEdgePoints: true
+		}
+	  }
     }
   );
   </script>

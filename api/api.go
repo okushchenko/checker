@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/alexgear/checker/common"
 	"github.com/alexgear/checker/config"
 	"github.com/alexgear/checker/datastore"
+	"github.com/alexgear/checker/process"
 	"github.com/gorilla/mux"
 )
 
@@ -53,7 +55,7 @@ func postDataHandler(w http.ResponseWriter, r *http.Request) {
 func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html")
 	vars := mux.Vars(r)
-	status, latency, err := datastore.Read(vars["ief"])
+	status, latency, err := datastore.Read(vars["ief"], time.Hour)
 	if err != nil {
 		log.Println("Failed to read from DB:", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -67,6 +69,10 @@ func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	buf := make([]byte, 0, 128)
+	buf = append(buf, "Seconds,ERR,OK"...)
+	buf = append(buf, `\n`...)
+	_, err = w.Write(buf)
+	buf = buf[:0]
 	for t, value := range latency {
 		buf = append(buf, t.Format(time.RFC3339Nano)...)
 		buf = append(buf, ","...)
@@ -99,10 +105,54 @@ func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// response structure to /status
+type getStatusResponse struct {
+	process.Status
+}
+
+func getStatusHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-type", "application/json")
+	vars := mux.Vars(r)
+	uptime, latency, err := datastore.Read(vars["ief"], 24*time.Hour)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	status, err := process.Compute(uptime, latency)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	response := getStatusResponse{status}
+	toWrite, err := json.Marshal(response)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(toWrite)
+	return
+}
+
+func getRootHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-type", "text/html")
+	_, err = fmt.Fprint(w, rootTemplate)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	return
+}
+
 func InitServer() error {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/v1/{ief}", postDataHandler).Methods("POST")
 	router.HandleFunc("/v1/{ief}", getGraphHandler).Methods("GET")
+	router.HandleFunc("/v1/{ief}/status", getStatusHandler).Methods("GET")
+	router.HandleFunc("/", getRootHandler).Methods("GET")
 	bind := fmt.Sprintf("%s:%d", config.C.ListenHost, config.C.ListenPort)
 	log.Println("listening on: ", bind)
 	return http.ListenAndServe(bind, router)

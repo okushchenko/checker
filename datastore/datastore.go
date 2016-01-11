@@ -14,7 +14,7 @@ var err error
 var db *bolt.DB
 
 func InitDB() (*bolt.DB, error) {
-	db, err = bolt.Open("my.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	db, err = bolt.Open("my.db", 0600, &bolt.Options{Timeout: 3 * time.Second})
 	if err != nil {
 		return nil, fmt.Errorf(err.Error())
 	}
@@ -56,8 +56,8 @@ func Write(ief string, r common.Response) error {
 	return err
 }
 
-func Read(ief string) (map[time.Time]bool, map[time.Time]float64, error) {
-	min := time.Now().Add(-24 * time.Hour)
+func Read(ief string, timeDelta time.Duration) (map[time.Time]bool, map[time.Time]float64, error) {
+	min := time.Now().Add(-1 * timeDelta)
 	latency := make(map[time.Time]float64)
 	status := make(map[time.Time]bool)
 	err = db.View(func(tx *bolt.Tx) error {
