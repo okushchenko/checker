@@ -33,6 +33,15 @@ func main() {
 			log.Fatal(err)
 		}
 		defer db.Close()
+		ticker := time.NewTicker(10 * time.Second)
+		go func() {
+			for _ = range ticker.C {
+				err = datastore.FlushCache()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		}()
 		log.Println("Dialing...")
 		err = api.InitServer()
 		if err != nil {

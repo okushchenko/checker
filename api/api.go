@@ -35,7 +35,7 @@ func postDataHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	response.Status, err = strconv.ParseBool(r.Form["status"][0])
+	response.IsUp, err = strconv.ParseBool(r.Form["status"][0])
 	if err != nil {
 		log.Println("Failed to parse status:", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -55,7 +55,7 @@ func postDataHandler(w http.ResponseWriter, r *http.Request) {
 func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html")
 	vars := mux.Vars(r)
-	status, latency, err := datastore.Read(vars["ief"], time.Hour)
+	status, err := datastore.Read(vars["ief"], 24*time.Hour)
 	if err != nil {
 		log.Println("Failed to read from DB:", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -69,21 +69,18 @@ func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	buf := make([]byte, 0, 128)
-	buf = append(buf, "Seconds,ERR,OK"...)
+	buf = append(buf, "Seconds,Average,P90,P99"...)
 	buf = append(buf, `\n`...)
 	_, err = w.Write(buf)
 	buf = buf[:0]
-	for t, value := range latency {
+	for t, s := range status {
 		buf = append(buf, t.Format(time.RFC3339Nano)...)
 		buf = append(buf, ","...)
-
-		if status[t] {
-			buf = append(buf, "NaN,"...)
-			buf = append(buf, strconv.FormatFloat(value, 'f', -1, 32)...)
-		} else {
-			buf = append(buf, strconv.FormatFloat(value, 'f', -1, 32)...)
-			buf = append(buf, ",NaN"...)
-		}
+		buf = append(buf, strconv.FormatFloat(s.Mean, 'f', -1, 32)...)
+		buf = append(buf, ","...)
+		buf = append(buf, strconv.FormatFloat(s.Percentile90, 'f', -1, 32)...)
+		buf = append(buf, ","...)
+		buf = append(buf, strconv.FormatFloat(s.Percentile99, 'f', -1, 32)...)
 		buf = append(buf, `\n`...)
 
 		_, err = w.Write(buf)
@@ -107,25 +104,25 @@ func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 
 // response structure to /status
 type getStatusResponse struct {
-	process.Status
+	common.Status
 }
 
 func getStatusHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 	vars := mux.Vars(r)
-	uptime, latency, err := datastore.Read(vars["ief"], 24*time.Hour)
+	status, err := datastore.Read(vars["ief"], 24*time.Hour)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	status, err := process.Compute(uptime, latency)
+	s, err := process.Compute(status)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	response := getStatusResponse{status}
+	response := getStatusResponse{s}
 	toWrite, err := json.Marshal(response)
 	if err != nil {
 		log.Println(err)

@@ -15,10 +15,10 @@ import (
 var err error
 
 func producer(ief string, c chan common.Response) {
-	start := time.Now()
+	start := time.Now().UTC()
 	status := network.Ping(ief)
 	latency := time.Since(start)
-	r := common.Response{Status: status, Latency: latency, Time: start}
+	r := common.Response{IsUp: status, Latency: latency, Time: start}
 	c <- r
 }
 
@@ -40,9 +40,9 @@ func send(ief string, r common.Response) error {
 	}
 	u.Path = fmt.Sprintf("/v1/%s", ief)
 	form := url.Values{}
-	form.Set("status", fmt.Sprint(r.Status))
+	form.Set("status", fmt.Sprint(r.IsUp))
 	form.Set("latency", r.Latency.String())
-	form.Set("time", r.Time.Format(time.RFC3339Nano))
+	form.Set("time", r.Time.UTC().Format(time.RFC3339Nano))
 	resp, err := client.PostForm(fmt.Sprint(u), form)
 	if err != nil {
 		return fmt.Errorf("Failed to send payload: %s", err.Error())

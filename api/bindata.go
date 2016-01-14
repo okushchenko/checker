@@ -41,20 +41,12 @@ const (
 	plotsTemplateTail = `",
     {
       title: '%s latency for last 24 hours',
-      labels: ['Seconds', 'ERR', 'OK'],
+      labels: ['Seconds', 'Mean', 'Percentile90', 'Percentile99'],
       ylabel: 'Latency (s)',
       xlabel: 'Time',
       showRoller: true,
-      colors: ['#FA7878', '#8AE234'],
       logscale: true,
-      strokeWidth: 1.3,
-	  series: {
-		ERR: {
-          fillGraph: true,
-		  stepPlot: true,
-	      drawGapEdgePoints: true
-		}
-	  }
+      strokeWidth: 1.3
     }
   );
   </script>
